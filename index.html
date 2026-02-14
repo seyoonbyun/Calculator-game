@@ -1,19 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>숫자 맞추고 아이패드 겟하기!</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>숫자 맞추기 게임!</h1>
-    <div id="result"></div>
-    <div id="chances">기회: 5번</div>
-    <input type="number" id="user-input"/>
-    <button id="play-button">Go!</button>
-    <button id="reset-button">Reset</button>
+    <div class="container">
+        <h1>🎮 숫자 맞추고 아이패드 겟하기!! 🎮</h1>
+        <div class="game-info">
+            <div class="difficulty-selector">
+                <label>난이도:</label>
+                <button id="easy-btn" class="difficulty-btn active">쉬움 (100)</button>
+                <button id="normal-btn" class="difficulty-btn">보통 (1000)</button>
+                <button id="hard-btn" class="difficulty-btn">어려움 (10000)</button>
+            </div>
+        </div>
+        
+        <div class="game-board">
+            <div id="chances" class="chances">기회: 5번</div>
+            <div id="range" class="range">범위: 1 ~ 100</div>
+            <div id="score">점수: 0</div>
+            
+            <div id="result" class="result"></div>
+            
+            <div class="input-group">
+                <input type="number" id="user-input" placeholder="숫자를 입력하세요 (1~100)"/>
+                <button id="play-button">Go!</button>
+            </div>
+            
+            <div id="guessed-list" class="guessed-list">
+                <strong>시도한 숫자:</strong>
+                <div id="guessed-numbers"></div>
+            </div>
+            
+            <button id="reset-button">🔄 새 게임</button>
+            <button id="rules-button">📋 게임 규칙</button>
+        </div>
+        
+        <div id="rules-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>게임 규칙</h2>
+                <ul>
+                    <li>1부터 100 사이의 숫자를 맞춰보세요!</li>
+                    <li>최대 5번의 기회가 있습니다</li>
+                    <li>범위 밖의 숫자나 이전에 입력한 숫자는 기회를 쓰지 않습니다</li>
+                    <li>"Up!!", "Down!!!" 힌트를 참고하세요</li>
+                    <li>정답을 맞추면 아이패드를 겟! 🎉</li>
+                </ul>
+            </div>
+        </div>
+    </div>
     <script src="main.js"></script>
 </body>
 </html>
