@@ -145,6 +145,7 @@ function showMessage(message, type = "") {
     resultDiv.textContent = message;
     resultDiv.className = "result";
     if (type) resultDiv.classList.add(type);
+    resultDiv.style.display = "block";
 }
 
 function saveScore() {
@@ -253,6 +254,7 @@ function reset() {
     userInput.value = "";
     resultDiv.textContent = "";
     resultDiv.className = "result";
+    resultDiv.style.display = "none";
     chancesDiv.textContent = `기회: ${maxChances}번`;
     rangeDiv.textContent = `범위: ${minRange} ~ ${maxRange}`;
     playButton.disabled = false;
@@ -285,6 +287,7 @@ window.addEventListener("click", (event) => {
 });
 
 // 게임 초기화 및 랭킹 표시
+resultDiv.style.display = "none";
 updateLevelDisplay();
 pickRandomNum();
 displayRanking();
