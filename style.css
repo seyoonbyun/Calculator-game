@@ -117,37 +117,19 @@ h1 {
     margin-bottom: 20px;
 }
 
-.difficulty-selector {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.difficulty-selector label {
+.level-display {
+    text-align: center;
+    font-size: 18px;
     font-weight: bold;
     color: #333;
-}
-
-.difficulty-btn {
-    padding: 8px 15px;
+    padding: 10px;
+    background: #e3f2fd;
+    border-radius: 8px;
     border: 2px solid #667eea;
-    background: white;
+}
+
+#current-level {
     color: #667eea;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: all 0.3s;
-}
-
-.difficulty-btn.active {
-    background: #667eea;
-    color: white;
-}
-
-.difficulty-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .game-board {
@@ -326,6 +308,45 @@ button {
     list-style-position: inside;
     line-height: 1.8;
     color: #666;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.yes-btn {
+    background: #28a745;
+    color: white;
+}
+
+.yes-btn:hover {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+}
+
+.no-btn {
+    background: #6c757d;
+    color: white;
+}
+
+.no-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
 }
 
 .close {

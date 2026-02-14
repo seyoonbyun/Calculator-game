@@ -7,18 +7,22 @@ let resultDiv = document.getElementById("result");
 let chancesDiv = document.getElementById("chances");
 let rulesButton = document.getElementById("rules-button");
 let rulesModal = document.getElementById("rules-modal");
+let nextLevelModal = document.getElementById("next-level-modal");
 let closeBtn = document.querySelector(".close");
 let scoreDiv = document.getElementById("score");
 let rangeDiv = document.getElementById("range");
 let guessedNumbersDiv = document.getElementById("guessed-numbers");
 let playerNameInput = document.getElementById("player-name");
 let rankingList = document.getElementById("ranking-list");
-let clearRankingBtn = document.getElementById("clear-ranking");
+let nextYesBtn = document.getElementById("next-yes-btn");
+let nextNoBtn = document.getElementById("next-no-btn");
+let currentLevelDisplay = document.getElementById("current-level");
 
 let chances = 3;
 let maxChances = 3;
 let guessedNumbers = [];
 let gameOver = false;
+let currentStage = 1; // 1: 쉬움(100), 2: 보통(1000), 3: 어려움(10000)
 let difficulty = 100; // 기본 난이도
 let score = 0;
 let minRange = 1;
@@ -28,49 +32,30 @@ let playerName = "";
 // 로컬 스토리지 키
 const RANKING_KEY = "numberGameRanking";
 
-// 난이도 버튼
-const easyBtn = document.getElementById("easy-btn");
-const normalBtn = document.getElementById("normal-btn");
-const hardBtn = document.getElementById("hard-btn");
+const LEVELS = [
+    { stage: 1, name: "1단계 (쉬움)", range: 100, difficulty: 100 },
+    { stage: 2, name: "2단계 (보통)", range: 1000, difficulty: 1000 },
+    { stage: 3, name: "3단계 (어려움)", range: 10000, difficulty: 10000 }
+];
 
 // 이벤트 리스너
 playButton.addEventListener("click", play);
 resetButton.addEventListener("click", reset);
 rulesButton.addEventListener("click", openRules);
 closeBtn.addEventListener("click", closeRules);
-clearRankingBtn.addEventListener("click", clearRanking);
+nextYesBtn.addEventListener("click", continueNextLevel);
+nextNoBtn.addEventListener("click", endGame);
 userInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") play();
 });
 
-// 난이도 선택
-easyBtn.addEventListener("click", () => setDifficulty(100, easyBtn));
-normalBtn.addEventListener("click", () => setDifficulty(1000, normalBtn));
-hardBtn.addEventListener("click", () => setDifficulty(10000, hardBtn));
+function getLevelInfo(stage) {
+    return LEVELS[stage - 1];
+}
 
-function setDifficulty(range, button) {
-    // 게임 중이면 변경 불가
-    if (!gameOver || guessedNumbers.length > 0) {
-        alert("게임을 먼저 끝내세요.");
-        return;
-    }
-    
-    difficulty = range;
-    minRange = 1;
-    maxRange = range;
-    maxChances = 3;
-    chances = maxChances;
-    
-    // 버튼 스타일 업데이트
-    document.querySelectorAll(".difficulty-btn").forEach(btn => btn.classList.remove("active"));
-    button.classList.add("active");
-    
-    // 입력창 placeholder 업데이트
-    userInput.placeholder = `숫자를 입력하세요 (${minRange}~${maxRange})`;
-    rangeDiv.textContent = `범위: ${minRange} ~ ${maxRange}`;
-    chancesDiv.textContent = `기회: ${maxChances}번`;
-    
-    reset();
+function updateLevelDisplay() {
+    const level = getLevelInfo(currentStage);
+    currentLevelDisplay.textContent = level.name;
 }
 
 function pickRandomNum() {
@@ -121,7 +106,7 @@ function play() {
         const bonusScore = (chances + 1) * difficultyMultiplier;
         score += bonusScore;
         scoreDiv.textContent = `점수: ${score}`;
-        showMessage(`🎉 정답입니다! 보너스 점수 +${bonusScore}! 아이패드 겟!! 🎉`, "success");
+        showMessage(`🎉 정답입니다! 보너스 점수 +${bonusScore}! 🎉`, "success");
         gameOver = true;
         playButton.disabled = true;
         userInput.disabled = true;
@@ -172,7 +157,7 @@ function saveScore() {
     rankings.push({
         name: playerName,
         score: score,
-        difficulty: difficulty,
+        level: currentStage,
         date: new Date().toLocaleDateString()
     });
     
@@ -185,8 +170,19 @@ function saveScore() {
     // 로컬 스토리지에 저장
     localStorage.setItem(RANKING_KEY, JSON.stringify(rankings));
     
+    // 현재 순위 표시
+    const myRank = rankings.findIndex(r => r.name === playerName && r.score === score) + 1;
+    const totalParticipants = rankings.length;
+    
     // 랭킹 표시 업데이트
     displayRanking();
+    
+    // 성공한 경우 다음 레벨 모달 표시
+    if (gameOver && userInput.disabled) {
+        setTimeout(() => {
+            showNextLevelModal(myRank, totalParticipants);
+        }, 500);
+    }
 }
 
 function displayRanking() {
@@ -202,17 +198,51 @@ function displayRanking() {
     rankings.slice(0, 5).forEach((rank, index) => {
         const li = document.createElement("li");
         const medal = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"][index];
-        li.textContent = `${medal} ${rank.name} - ${rank.score}점 (난이도: ${rank.difficulty})`;
+        const levelName = LEVELS[rank.level - 1].name;
+        li.textContent = `${medal} ${rank.name} - ${rank.score}점 (${levelName})`;
         rankingList.appendChild(li);
     });
 }
 
-function clearRanking() {
-    if (confirm("랭킹을 정말 초기화하시겠습니까?")) {
-        localStorage.removeItem(RANKING_KEY);
-        displayRanking();
-        alert("랭킹이 초기화되었습니다.");
+function showNextLevelModal(myRank, totalParticipants) {
+    const level = getLevelInfo(currentStage);
+    let message = document.getElementById("congrats-message");
+    
+    if (currentStage === 3) {
+        message.innerHTML = `<p>최고 난이도를 모두 클리어했습니다!</p><p>최종 점수: ${score}점</p><p>전체 참가자 중 <strong>${myRank}위</strong>입니다!</p>`;
+        nextYesBtn.style.display = "none";
+        nextNoBtn.textContent = "종료";
+    } else {
+        const nextLevel = getLevelInfo(currentStage + 1);
+        message.innerHTML = `<p>현재 ${level.name} 클리어!</p><p>최종 점수: ${score}점</p><p>전체 참가자 중 <strong>${myRank}위</strong>입니다!</p><p><strong>${nextLevel.name}</strong>으로 도전해보세요!</p>`;
+        nextYesBtn.style.display = "inline-block";
+        nextNoBtn.textContent = "종료";
     }
+    
+    nextLevelModal.classList.remove("hidden");
+    nextLevelModal.style.display = "block";
+}
+
+function continueNextLevel() {
+    nextLevelModal.classList.add("hidden");
+    nextLevelModal.style.display = "none";
+    
+    if (currentStage < 3) {
+        currentStage++;
+        const level = getLevelInfo(currentStage);
+        difficulty = level.difficulty;
+        minRange = 1;
+        maxRange = level.range;
+        updateLevelDisplay();
+        reset();
+    }
+}
+
+function endGame() {
+    nextLevelModal.classList.add("hidden");
+    nextLevelModal.style.display = "none";
+    currentStage = 1;
+    reset();
 }
 
 function reset() {
@@ -249,8 +279,12 @@ window.addEventListener("click", (event) => {
     if (event.target === rulesModal) {
         closeRules();
     }
+    if (event.target === nextLevelModal) {
+        endGame();
+    }
 });
 
 // 게임 초기화 및 랭킹 표시
+updateLevelDisplay();
 pickRandomNum();
 displayRanking();
