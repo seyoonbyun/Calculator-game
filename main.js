@@ -12,8 +12,8 @@ let scoreDiv = document.getElementById("score");
 let rangeDiv = document.getElementById("range");
 let guessedNumbersDiv = document.getElementById("guessed-numbers");
 
-let chances = 5;
-let maxChances = 5;
+let chances = 3;
+let maxChances = 3;
 let guessedNumbers = [];
 let gameOver = false;
 let difficulty = 100; // 기본 난이도
@@ -50,7 +50,7 @@ function setDifficulty(range, button) {
     difficulty = range;
     minRange = 1;
     maxRange = range;
-    maxChances = range <= 100 ? 5 : range <= 1000 ? 7 : 10;
+    maxChances = 3;
     chances = maxChances;
     
     // 버튼 스타일 업데이트
