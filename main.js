@@ -11,6 +11,9 @@ let closeBtn = document.querySelector(".close");
 let scoreDiv = document.getElementById("score");
 let rangeDiv = document.getElementById("range");
 let guessedNumbersDiv = document.getElementById("guessed-numbers");
+let playerNameInput = document.getElementById("player-name");
+let rankingList = document.getElementById("ranking-list");
+let clearRankingBtn = document.getElementById("clear-ranking");
 
 let chances = 3;
 let maxChances = 3;
@@ -20,6 +23,10 @@ let difficulty = 100; // 기본 난이도
 let score = 0;
 let minRange = 1;
 let maxRange = 100;
+let playerName = "";
+
+// 로컬 스토리지 키
+const RANKING_KEY = "numberGameRanking";
 
 // 난이도 버튼
 const easyBtn = document.getElementById("easy-btn");
@@ -31,6 +38,7 @@ playButton.addEventListener("click", play);
 resetButton.addEventListener("click", reset);
 rulesButton.addEventListener("click", openRules);
 closeBtn.addEventListener("click", closeRules);
+clearRankingBtn.addEventListener("click", clearRanking);
 userInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") play();
 });
@@ -117,6 +125,8 @@ function play() {
         gameOver = true;
         playButton.disabled = true;
         userInput.disabled = true;
+        playerNameInput.disabled = true;
+        saveScore();
         return;
     }
     
@@ -133,6 +143,8 @@ function play() {
         gameOver = true;
         playButton.disabled = true;
         userInput.disabled = true;
+        playerNameInput.disabled = true;
+        saveScore();
     }
     
     userInput.value = "";
@@ -150,6 +162,59 @@ function showMessage(message, type = "") {
     if (type) resultDiv.classList.add(type);
 }
 
+function saveScore() {
+    playerName = playerNameInput.value.trim() || "익명의 참가자";
+    
+    // 로컬 스토리지에서 랭킹 가져오기
+    let rankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || [];
+    
+    // 현재 점수 추가
+    rankings.push({
+        name: playerName,
+        score: score,
+        difficulty: difficulty,
+        date: new Date().toLocaleDateString()
+    });
+    
+    // 점수 기준정렬 (내림차순)
+    rankings.sort((a, b) => b.score - a.score);
+    
+    // 상위 50개만 유지
+    rankings = rankings.slice(0, 50);
+    
+    // 로컬 스토리지에 저장
+    localStorage.setItem(RANKING_KEY, JSON.stringify(rankings));
+    
+    // 랭킹 표시 업데이트
+    displayRanking();
+}
+
+function displayRanking() {
+    const rankings = JSON.parse(localStorage.getItem(RANKING_KEY)) || [];
+    rankingList.innerHTML = "";
+    
+    if (rankings.length === 0) {
+        rankingList.innerHTML = "<li>아직 기록이 없습니다</li>";
+        return;
+    }
+    
+    // 상위 5개만 표시
+    rankings.slice(0, 5).forEach((rank, index) => {
+        const li = document.createElement("li");
+        const medal = ["🥇", "🥈", "🥉", "4️⃣", "5️⃣"][index];
+        li.textContent = `${medal} ${rank.name} - ${rank.score}점 (난이도: ${rank.difficulty})`;
+        rankingList.appendChild(li);
+    });
+}
+
+function clearRanking() {
+    if (confirm("랭킹을 정말 초기화하시겠습니까?")) {
+        localStorage.removeItem(RANKING_KEY);
+        displayRanking();
+        alert("랭킹이 초기화되었습니다.");
+    }
+}
+
 function reset() {
     computerNum = 0;
     chances = maxChances;
@@ -162,7 +227,10 @@ function reset() {
     rangeDiv.textContent = `범위: ${minRange} ~ ${maxRange}`;
     playButton.disabled = false;
     userInput.disabled = false;
+    playerNameInput.disabled = false;
     guessedNumbersDiv.innerHTML = "";
+    score = 0;
+    scoreDiv.textContent = "점수: 0";
     pickRandomNum();
     userInput.focus();
 }
@@ -183,5 +251,6 @@ window.addEventListener("click", (event) => {
     }
 });
 
-// 게임 초기화
+// 게임 초기화 및 랭킹 표시
 pickRandomNum();
+displayRanking();
